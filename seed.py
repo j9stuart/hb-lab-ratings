@@ -47,24 +47,22 @@ def load_movies():
         row = row.rstrip().split("|")
         movie_id, title, released_str, video_release_date, imdb_url = row[:5]
         if released_str:
-            released_at = datetime.strptime(released_str, '%d-%b-%Y')
+            released_at = datetime.strptime(released_str, '%d-%b-%Y').date()
         else:
             released_at = None
 
         if title != "unknown":
             year = re.search(r'\(\d{4}\)', title).group()
-            title = title.rstrip(year)
+            title = title.rstrip(" " + year)
 
         movie = Movie(movie_id=movie_id,
                       title=title,
                       released_at=released_at,
                       imdb_url=imdb_url,)
 
-        print movie_id, title, len(imdb_url)
+        db.session.add(movie)
 
-    #     db.session.add(movie)
-
-    # db.session.commit()
+    db.session.commit()
 
 def load_ratings():
     """Load ratings from u.data into database."""
@@ -78,12 +76,9 @@ def load_ratings():
         row = row.rstrip()
         user_id, movie_id, score, rating_id = [splits for splits in row.split("\t")]
         
-        rating = Rating(rating_id=rating_id,
-                        movie_id=movie_id,
+        rating = Rating(movie_id=movie_id,
                         user_id=user_id,
                         score=score,)
-
-        print rating
 
         db.session.add(rating)
 
