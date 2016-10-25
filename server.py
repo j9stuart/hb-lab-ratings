@@ -34,6 +34,45 @@ def user_list():
     users = User.query.all()
     return render_template("users_list.html", users=users)
 
+@app.route('/create-user')
+def create_user():
+    """Render a form for user to create sign in"""
+
+    return render_template("create_user.html")
+
+@app.route('/submit-account', methods=["POST"])
+def submit_account():
+    """Get email and password, sign-in (if exist), or create new user"""
+
+    email = request.form.get("email")
+    password = request.form.get("password")
+
+    user = User.query.filter_by(email=email).all()
+
+    if not user:
+        new_user = User(email=email, password=password)
+        db.session.add(new_user)
+        db.session.commit()
+
+    return redirect("/")
+
+@app.route('/login-form')
+def log_in():
+    """Logs existing user in"""
+    return render_template("log_in_form.html")
+
+@app.route('/form-submission')
+def submit_form():
+    """Submits log-in information"""
+
+    email = request.form.get('email')
+    password = request.form.get('password')
+
+    db_password = db.session.query(User.password).filter_by(email=email).all()
+    db_user_id = db.session.query(User.user_id).filter_by(email=email).all()
+
+    if db_password == password:
+        
 
 
 if __name__ == "__main__":
