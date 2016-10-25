@@ -5,6 +5,7 @@ from model import User
 from model import Rating
 from model import Movie
 from datetime import datetime
+import re
 
 from model import connect_to_db, db
 from server import app
@@ -43,19 +44,27 @@ def load_movies():
     Movie.query.delete()
 
     for row in open("seed_data/u.item"):
-        row = row.rstrip()
-        movie_id, title, released_at, imdb_url = row.split("|")
-        released_at = datetime.strptime(released_at, '%d-%b-%Y')
-        title, extraneous_year = title.split("(")
+        row = row.rstrip().split("|")
+        movie_id, title, released_str, video_release_date, imdb_url = row[:5]
+        if released_str:
+            released_at = datetime.strptime(released_str, '%d-%b-%Y')
+        else:
+            released_at = None
+
+        if title != "unknown":
+            year = re.search(r'\(\d{4}\)', title).group()
+            title = title.rstrip(year)
 
         movie = Movie(movie_id=movie_id,
                       title=title,
                       released_at=released_at,
                       imdb_url=imdb_url,)
 
-        db.session.add(movie)
+        print movie_id, title, len(imdb_url)
 
-    db.session.commit()
+    #     db.session.add(movie)
+
+    # db.session.commit()
 
 def load_ratings():
     """Load ratings from u.data into database."""
@@ -65,13 +74,16 @@ def load_ratings():
     Rating.query.delete()
 
     for row in open("seed_data/u.data"):
-        row = row.rstrip()
-        rating_id, movie_id, user_id, score = row.split(" ")
 
+        row = row.rstrip()
+        user_id, movie_id, score, rating_id = [splits for splits in row.split("\t")]
+        
         rating = Rating(rating_id=rating_id,
                         movie_id=movie_id,
                         user_id=user_id,
                         score=score,)
+
+        print rating
 
         db.session.add(rating)
 
