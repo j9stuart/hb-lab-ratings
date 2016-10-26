@@ -71,8 +71,18 @@ def submit_form():
     db_password = db.session.query(User.password).filter_by(email=email).all()
     db_user_id = db.session.query(User.user_id).filter_by(email=email).all()
 
-    if db_password == password:
-        
+    # if db_password == password:
+@app.route('/movies')
+def movies_list():
+
+    movies = Movie.query.order_by('title').all()
+    return render_template('movies_list.html', movies=movies)
+
+@app.route('/movie/<movie.movie_id>') #is this right?
+def show_movie_info():
+    """Shows information about a movie"""
+
+    ratings = db.session.query(Movie.ratings).filter_by(movie_id=movie_id).all()
 
 
 if __name__ == "__main__":
