@@ -27,12 +27,30 @@ def index():
 
     return render_template("homepage.html")
 
+
 @app.route('/users')
 def user_list():
     """Show a list of users"""
 
     users = User.query.all()
     return render_template("users_list.html", users=users)
+
+
+@app.route('/users/<user_id>')
+def show_user_info(user_id):
+    """Show user-specific information"""
+
+    user_info = db.session.query(User).filter_by(user_id=user_id).one()
+    zipcode = user_info.zipcode
+    age = user_info.age
+    ratings = user_info.ratings
+    print ratings
+
+    return render_template("users_page.html", 
+                            zipcode=zipcode,
+                            age=age,
+                            ratings=ratings)
+
 
 @app.route('/create-user')
 def create_user():
@@ -59,30 +77,53 @@ def submit_account():
 @app.route('/login-form')
 def log_in():
     """Logs existing user in"""
+
     return render_template("log_in_form.html")
 
-@app.route('/form-submission')
+@app.route('/form-submission', methods=['POST'])
 def submit_form():
     """Submits log-in information"""
 
     email = request.form.get('email')
     password = request.form.get('password')
+    user_info = db.session.query(User).filter_by(email=email).all()
+    user = user_info[0]
+    print user
 
-    db_password = db.session.query(User.password).filter_by(email=email).all()
-    db_user_id = db.session.query(User.user_id).filter_by(email=email).all()
+    
+    if user_info == []:
+        flash("No account associated with this email address. Create an account below.")
+        return redirect('/create-user')
+    if user.password == password:
+        session["user_id"] = user.user_id
+        flash('You were successfully logged in')
+        return redirect("/")
+    else:
+        flash('Invalid credentials')
+        return redirect('/login-form')
 
-    # if db_password == password:
+@app.route('/log-out')
+def log_out():
+    """Logs user out"""
+
+    del session["user_id"]
+    flash('You were successfully logged out')
+    return redirect("/")
+
 @app.route('/movies')
 def movies_list():
 
     movies = Movie.query.order_by('title').all()
     return render_template('movies_list.html', movies=movies)
 
-@app.route('/movie/<movie.movie_id>') #is this right?
-def show_movie_info():
-    """Shows information about a movie"""
+@app.route('/movies/<movie_id>') #is this right?
+def show_movie_info(movie_id):
+#     """Shows information about a movie"""
 
-    ratings = db.session.query(Movie.ratings).filter_by(movie_id=movie_id).all()
+    # you want all the ratings objects for a given movie 
+    # ratings = db.session.query(Movie.ratings).filter_by(movie_id=movie_id).all()
+
+    return render_template("movie_info.html")
 
 
 if __name__ == "__main__":
@@ -90,6 +131,7 @@ if __name__ == "__main__":
     # point that we invoke the DebugToolbarExtension
     app.debug = True
 
+    app.jinja_env.auto_reload = True
     connect_to_db(app)
 
     # Use the DebugToolbar

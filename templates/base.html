@@ -4,10 +4,29 @@
   <title>Ratings</title>
 </head>
 <body>
-  Ratings
-  <hr>
 
-  {% block content %} put your content here {% endblock %}
+<header>
+Ratings
+
+{% if "user_id" in session %}
+  <a href="/log-out">Log out</a>
+{% else %}
+  <a href="/login-form">Log in</a>
+{% endif %}
+</header>
+    <!-- Show flashed messages -->
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      {% for message in messages %}
+          <div class='alert alert-warning'>{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %} 
+
+  {% block content %}  
+
+  {% endblock %}
   
 </body>
 </html>
+

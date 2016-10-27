@@ -4,17 +4,11 @@
 <h2>Create an Account</h2>
 
 <form action="/submit-account" method="POST">
-    <label name="email">Email:</label>
-        <input type="text" name="email" value="email"></input><br>
-    <label name="password">Password:</label>
-        <input type="text" name="password" value="password"></input><br>
-        <input type="submit" value="Submit"></input>
+    <label>Email:
+        <input type="email" name="email" placeholder="email"></label><br>
+    <label>Password:
+        <input type="password" name="password" placeholder="password"></label><br>
+        <input type="submit" value="Submit">
 </form>
-
-
-
-
-
-
 
 {% endblock %}
