@@ -2,11 +2,16 @@
 
 {% block content %}
 
+<h2><u>User Id: {{ user.user_id }}</u> </h2>
 <ul>
-  <li>{{ zipcode }}</li>
-  <li>{{ age }}</li>
-  {% for rating in ratings %}
-  <li>{{ rating.movie.title }} {{ rating.score }}</li>
+  <li><b>Zipcode:</b> {{ user.zipcode }}</li>
+  <li><b>Age:</b> {{ user.age }}</li>
+</ul>
+
+<h2><u>Ratings</u></h2>
+<ul>
+  {% for rating in user.ratings %}
+  <li><b>Title:</b> {{ rating.movie.title }} | <b>Score:</b> {{ rating.score }}</li>
   {% endfor %}
 </ul>
 

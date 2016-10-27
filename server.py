@@ -6,6 +6,7 @@ from flask import Flask, jsonify, render_template, redirect, request, flash, ses
 from flask_debugtoolbar import DebugToolbarExtension
 
 from model import connect_to_db, db, User, Rating, Movie
+from sqlalchemy.sql import func
 
 
 app = Flask(__name__)
@@ -40,16 +41,13 @@ def user_list():
 def show_user_info(user_id):
     """Show user-specific information"""
 
-    user_info = db.session.query(User).filter_by(user_id=user_id).one()
-    zipcode = user_info.zipcode
-    age = user_info.age
-    ratings = user_info.ratings
-    print ratings
+    user = db.session.query(User).filter_by(user_id=user_id).one()
+    # zipcode = user_info.zipcode
+    # age = user_info.age
+    # ratings = user_info.ratings
 
     return render_template("users_page.html", 
-                            zipcode=zipcode,
-                            age=age,
-                            ratings=ratings)
+                            user=user,)
 
 
 @app.route('/create-user')
@@ -88,16 +86,16 @@ def submit_form():
     password = request.form.get('password')
     user_info = db.session.query(User).filter_by(email=email).all()
     user = user_info[0]
-    print user
 
     
     if user_info == []:
         flash("No account associated with this email address. Create an account below.")
         return redirect('/create-user')
     if user.password == password:
-        session["user_id"] = user.user_id
+        user_id = user.user_id
+        session["user_id"] = user_id
         flash('You were successfully logged in')
-        return redirect("/")
+        return redirect("/users/" + str(user_id))
     else:
         flash('Invalid credentials')
         return redirect('/login-form')
@@ -116,14 +114,37 @@ def movies_list():
     movies = Movie.query.order_by('title').all()
     return render_template('movies_list.html', movies=movies)
 
-@app.route('/movies/<movie_id>') #is this right?
+@app.route('/movies/<movie_id>')
 def show_movie_info(movie_id):
-#     """Shows information about a movie"""
+    """Shows information about a movie"""
 
-    # you want all the ratings objects for a given movie 
-    # ratings = db.session.query(Movie.ratings).filter_by(movie_id=movie_id).all()
+    movies = db.session.query(Movie).filter_by(movie_id=movie_id).one()
 
-    return render_template("movie_info.html")
+    # average_rating=db.session.query(func.avg(movies.ratings).filter(movie_id==movie_id))
+
+    return render_template("movie_info.html", movies=movies)
+
+@app.route('/submit-rating/<movie_id>')
+def submit_rating(movie_id):
+    """Allows user to submit rating"""
+
+    movies = db.session.query(Movie).filter_by(movie_id=movie_id).one()
+
+    return render_template("rating_submission.html", movies=movies)
+
+
+@app.route('/process-rating/<movie_id>')
+def submit_rating(movie_id):
+    """Allows user to submit rating"""
+
+    user_id = session["user_id"]
+    rating = request.form.get("rating")
+
+    
+
+    return render_template("rating_submission.html", movies=movies)
+
+
 
 
 if __name__ == "__main__":

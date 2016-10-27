@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block content %}
+
+    <h2>Submit Rating for {{ movies.title }}</h2>
+
+    <form action="/process-rating/{{ movies.movie_id }}" method="POST">
+        Select a rating:
+        <select name="rating">
+            <option value=1>1</option>
+            <option value=2>2</option>
+            <option value=3>3</option>
+            <option value=4>4</option>
+            <option value=5>5</option>
+        </select>
+        <input type="submit" value="Submit Rating">
+    </form>
+
+
+{% endblock %}
