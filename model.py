@@ -29,23 +29,21 @@ class User(db.Model):
 
         return "<User user_id= {} email={}>".format(self.user_id, self.email)
 
-    def get_similarity(self, other):
+    def similarity(self, other):
         """Provides similarity between users"""
         user_ratings = {}
         pairs = []
 
-
-        ratings = self.ratings
-
+        u_ratings = self.ratings
         o_ratings = other.ratings
 
-        for rating in ratings:
+        for rating in u_ratings:
             user_ratings[rating.movie_id]=rating
 
         for o_rating in o_ratings:
-            other_rating = user_ratings.get(o_rating.movie_id)
-            if other_rating is not None:
-                pair = (other_rating.score, o_rating.score)
+            u_rating = user_ratings.get(o_rating.movie_id)
+            if u_rating is not None:
+                pair = (u_rating.score, o_rating.score)
                 pairs.append(pair)
 
         if pairs:
@@ -53,6 +51,34 @@ class User(db.Model):
 
         else:
             return 0.0
+
+    def predict_rating(self, movie):
+        """Predict a user's rating of a movie."""
+
+        other_ratings = movie.ratings
+        other_users = [ r.user for r in other_ratings ]
+
+        similarities = [
+            (self.similarity(other_user), other_user.ratings)
+            for other_user in other_users
+        ]
+
+        similarities.sort(reverse=True)
+
+        coefficients, ratings = zip(*similarities)
+
+        sum_coeff_ratings = 0
+
+        for i in range(len(coefficients)):
+            product = coefficients[i] * ratings[i]
+            sum_coeff_ratings += product
+
+
+        mean = sum_coeff_ratings / sum(coefficients)
+
+        return mean
+
+
 
 
 
