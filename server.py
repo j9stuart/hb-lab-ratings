@@ -6,7 +6,7 @@ from flask import Flask, jsonify, render_template, redirect, request, flash, ses
 from flask_debugtoolbar import DebugToolbarExtension
 
 from model import connect_to_db, db, User, Rating, Movie
-from sqlalchemy.sql import func
+# from sqlalchemy.sql import func
 
 
 app = Flask(__name__)
@@ -133,16 +133,25 @@ def submit_rating(movie_id):
     return render_template("rating_submission.html", movies=movies)
 
 
-@app.route('/process-rating/<movie_id>')
-def submit_rating(movie_id):
+@app.route('/process-rating/<movie_id>', methods=['POST'])
+def process_rating(movie_id):
     """Allows user to submit rating"""
 
     user_id = session["user_id"]
-    rating = request.form.get("rating")
-
+    score = request.form.get("rating")
+    ratings = db.session.query(Rating.movie_id, Rating.score).filter_by(user_id=5).all()
+    movie_ids, scores = zip(*ratings)
     
+    if int(movie_id) in movie_ids:
+         Rating.query.filter_by(movie_id=movie_id, user_id=user_id).delete()
 
-    return render_template("rating_submission.html", movies=movies)
+    new_rating = Rating(movie_id=movie_id, score=score, user_id=user_id)
+    db.session.add(new_rating)
+    db.session.commit()
+
+    flash('Your rating was submitted!')
+
+    return redirect('/users/'+ str(user_id))
 
 
 
